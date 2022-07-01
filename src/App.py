@@ -8,7 +8,6 @@ from security import authenticate, identity
 from src.resources.user import UserRegister, Users, UserId
 from src.resources.item import ItemRegister, Items, ItemId
 from src.resources.store import StoreRegister, StoreId, Stores
-from src.resources.aline import Aline
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///data.db')
@@ -30,7 +29,6 @@ api.add_resource(UserId, '/user/<param>', methods=['GET', 'PUT'])
 api.add_resource(StoreRegister, '/store_register', methods=['POST'])
 api.add_resource(StoreId, '/store/<int:_id>', methods=['GET', 'PUT', 'DELETE'])
 api.add_resource(Stores, '/stores', methods=['GET'])
-api.add_resource(Aline, '/aline', methods=['GET'])
 
 
 if __name__ == '__main__':
