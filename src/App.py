@@ -6,7 +6,6 @@ from security import authenticate, identity
 from src.resources.user import UserRegister, Users, UserId
 from src.resources.item import ItemRegister, Items, ItemId
 from src.resources.store import StoreRegister, StoreId, Stores
-# from src.db import db
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
@@ -31,5 +30,6 @@ api.add_resource(Stores, '/stores', methods=['GET'])
 
 
 if __name__ == '__main__':
+    from src.db import db
     db.init_app(app)
     app.run(port=5000, debug=True)
