@@ -6,17 +6,11 @@ from security import authenticate, identity
 from src.resources.user import UserRegister, Users, UserId
 from src.resources.item import ItemRegister, Items, ItemId
 from src.resources.store import StoreRegister, StoreId, Stores
-from src.db import db
+# from src.db import db
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-
-@app.before_first_request
-def create_tables():
-    db.create_all()
-
 
 app.secret_key = 'robsu'
 api = Api(app)
