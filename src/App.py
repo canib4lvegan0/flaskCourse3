@@ -10,6 +10,8 @@ from src.resources.item import ItemRegister, Items, ItemId
 from src.resources.store import StoreRegister, StoreId, Stores
 from src.resources.aline import Aline
 
+from src.db import db
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_CUSTOM_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -34,6 +36,5 @@ api.add_resource(Aline, '/aline', methods=['GET'])
 
 
 if __name__ == '__main__':
-    from src.db import db
     db.init_app(app)
     app.run(port=5000, debug=True)
