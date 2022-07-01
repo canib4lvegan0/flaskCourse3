@@ -35,6 +35,6 @@ api.add_resource(Stores, '/stores', methods=['GET'])
 api.add_resource(Aline, '/aline', methods=['GET'])
 
 
+db.init_app(app)
 if __name__ == '__main__':
-    db.init_app(app)
     app.run(port=5000, debug=True)
