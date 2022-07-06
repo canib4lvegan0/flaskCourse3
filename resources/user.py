@@ -1,8 +1,8 @@
 from flask_jwt import jwt_required
 from flask_restful import Resource, reqparse
 
-from src.models.user import UserModel
-from src.utils import convert_to_dec_or_alpha
+from models.user import UserModel
+from utils import convert_to_dec_or_alpha
 
 
 def _user_parser(to):

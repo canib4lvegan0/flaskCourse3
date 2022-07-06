@@ -2,7 +2,7 @@ from flask_jwt import jwt_required
 from flask_restful import Resource, reqparse
 from sqlalchemy.exc import SQLAlchemyError
 
-from src.models.item import ItemModel
+from models.item import ItemModel
 
 
 def _item_parser(to):

@@ -5,12 +5,12 @@ from flask_restful import Api
 from flask_jwt import JWT, timedelta
 from security import authenticate, identity
 
-from src.resources.user import UserRegister, Users, UserId
-from src.resources.item import ItemRegister, Items, ItemId
-from src.resources.store import StoreRegister, StoreId, Stores
-from src.resources.aline import Aline
+from resources.user import UserRegister, Users, UserId
+from resources.item import ItemRegister, Items, ItemId
+from resources.store import StoreRegister, StoreId, Stores
+from resources.aline import Aline
 
-from src.db import db
+from db import db
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URI', 'sqlite:///data.db')
