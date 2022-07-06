@@ -9,6 +9,7 @@ from resources.user import UserRegister, Users, UserId
 from resources.item import ItemRegister, Items, ItemId
 from resources.store import StoreRegister, StoreId, Stores
 from resources.aline import Aline
+from resources.home import Home
 
 from db import db
 
@@ -33,7 +34,7 @@ api.add_resource(StoreRegister, '/store_register', methods=['POST'])
 api.add_resource(StoreId, '/store/<int:_id>', methods=['GET', 'PUT', 'DELETE'])
 api.add_resource(Stores, '/stores', methods=['GET'])
 api.add_resource(Aline, '/aline', methods=['GET'])
-api.add_resource(Aline, '/', methods=['GET'])
+api.add_resource(Home, '/', methods=['GET'])
 
 
 db.init_app(app)
