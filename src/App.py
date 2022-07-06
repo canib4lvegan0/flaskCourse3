@@ -33,6 +33,7 @@ api.add_resource(StoreRegister, '/store_register', methods=['POST'])
 api.add_resource(StoreId, '/store/<int:_id>', methods=['GET', 'PUT', 'DELETE'])
 api.add_resource(Stores, '/stores', methods=['GET'])
 api.add_resource(Aline, '/aline', methods=['GET'])
+api.add_resource(Aline, '/', methods=['GET'])
 
 
 db.init_app(app)
