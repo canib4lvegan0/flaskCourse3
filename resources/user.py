@@ -1,4 +1,6 @@
-from flask_jwt import jwt_required
+from hmac import compare_digest
+
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
 from flask_restful import Resource, reqparse
 
 from models.user import UserModel
@@ -11,9 +13,11 @@ def _user_parser(to):
     if to == 'post':
         parser.add_argument('username', type=str, required=True, help='Invalid cannot be blank!')
         parser.add_argument('password', type=str, required=True, help='Invalid cannot be blank!')
-
-    if to == 'put':
+    elif to == 'put':
         parser.add_argument('username', type=str, required=False)
+    elif to == 'login':
+        parser.add_argument('username', type=str, required=True, help='Invalid cannot be blank!')
+        parser.add_argument('password', type=str, required=True, help='Invalid cannot be blank!')
 
     return parser
 
@@ -36,10 +40,29 @@ class UserRegister(Resource):
             return {'message': ex}, 500
 
 
+class UserLogin(Resource):
+
+    @classmethod
+    def post(cls):
+        data = _user_parser('login').parse_args()
+
+        if user := UserModel.find_by_username(data['username']):
+            if compare_digest(user.password, data['password']):
+                access_token = create_access_token(identity=user.id, fresh=True)
+                refresh_token = create_refresh_token(user.id)
+
+                return {
+                    'access_token': access_token,
+                    'refresh_token': refresh_token
+                }, 200
+
+        return {'message': 'Invalid credentials'}, 401
+
 # noinspection PyUnreachableCode
 class UserId(Resource):
-    @jwt_required()
-    def get(self, param):
+
+    @classmethod
+    def _get_user_by_param(cls, param):
         converted = convert_to_dec_or_alpha(param)
 
         result = None
@@ -47,35 +70,43 @@ class UserId(Resource):
             result = UserModel.find_by_username(converted)
         elif type(converted) == int:
             result = UserModel.find_by_id(int(converted))
-        else:
-            return {'message': 'Invalid parameter.'}, 400
 
         if result:
-            return result.to_json(), 200
+            return result
+        return None
+
+    @classmethod
+    @jwt_required()
+    def get(cls, param):
+        if user := cls._get_user_by_param(param):
+            return user.to_json(), 200
         return {'message': 'User not found'}, 404
 
+    @classmethod
     @jwt_required()
-    def put(self, param):
-        converted = convert_to_dec_or_alpha(param)
-
-        result = None
-        if type(converted) == str:
-            result = UserModel.find_by_username(converted)
-        elif type(converted) == int:
-            result = UserModel.find_by_id(int(converted))
-        else:
-            return {'message': 'Invalid parameter.'}, 400
-
-        if result is None:
+    def put(cls, param):
+        if not (user := cls._get_user_by_param(param)):
             return {'message': 'User not found'}, 404
 
         data = _user_parser('put').parse_args()
 
         try:
-            result.username = data['username']
-            result.save_to_db()
-            return {'id': result.id}, 201
-        except result.SQLAlchemyError as ex:
+            user.username = data['username']
+            user.save_to_db()
+            return {'id': user.id}, 201
+        except user.SQLAlchemyError as ex:
+            return {'message': ex}, 500
+
+    @classmethod
+    @jwt_required()
+    def delete(cls, param):
+        if not (user := cls._get_user_by_param(param)):
+            return {'message': 'User not found'}, 404
+
+        try:
+            user.delete_from_db()
+            return {'id': user.id}, 200
+        except user.SQLAlchemyError as ex:
             return {'message': ex}, 500
 
 
@@ -86,6 +117,7 @@ class Users(Resource):
     def get(self):
         if result := UserModel.get_users():
             users = [u.to_json() for u in result]
+
             return {'users': users}, 200
         else:
             return {}, 404
