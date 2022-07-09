@@ -1,6 +1,6 @@
 from hmac import compare_digest
 
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt
 from flask_jwt_extended import current_user
 from flask_restful import Resource, reqparse
 
@@ -124,6 +124,8 @@ class UserProfile(Resource):
         return {
             'id': current_user.id,
             'username': current_user.username,
+            'is_admin': (claims := get_jwt()) and claims['is_admin']
+
         }, 200
 
 
