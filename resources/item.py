@@ -1,4 +1,4 @@
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt
 from flask_restful import Resource, reqparse
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -24,7 +24,12 @@ def _item_parser(to):
 
 # noinspection PyUnreachableCode
 class ItemRegister(Resource):
+
+    @jwt_required()
     def post(self):
+        if (claims := get_jwt()) and not claims['is_admin']:
+            return {'message': 'You are not admin. You can not do this.'}
+
         data = _item_parser('post').parse_args()
         new_item = ItemModel(**data)
 
@@ -43,6 +48,9 @@ class ItemId(Resource):
 
     @jwt_required()
     def put(self, _id):
+        if (claims := get_jwt()) and not claims['is_admin']:
+            return {'message': 'You are not admin. You can not do this.'}
+
         data = _item_parser('put').parse_args()
 
         if result := ItemModel.find_by_id(_id):
@@ -59,6 +67,8 @@ class ItemId(Resource):
 
     @jwt_required()
     def delete(self, _id):
+        if (claims := get_jwt()) and not claims['is_admin']:
+            return {'message': 'You are not admin. You can not do this.'}
 
         if result := ItemModel.find_by_id(_id):
             result.delete_from_db()

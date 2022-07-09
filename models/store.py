@@ -31,6 +31,7 @@ class StoreModel(db.Model):
 
     def to_json(self):
         return {
+            'id': self.id,
             'title': self.title,
-            'stores': [i.to_json() for i in self.items]
+            'items': [i.to_json() for i in self.items]
         }

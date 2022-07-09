@@ -1,5 +1,5 @@
 
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt
 from flask_restful import Resource, reqparse
 from models.store import StoreModel
 
@@ -17,16 +17,20 @@ def _store_parser(to):
 
 # noinspection PyUnreachableCode
 class StoreRegister(Resource):
+
+    @jwt_required()
     def post(self):
+        if (claims := get_jwt()) and not claims['is_admin']:
+            return {'message': 'You are not admin. You can not do this.'}
+
         data = _store_parser('post').parse_args()
-        new_user = StoreModel(**data)
+        new_store = StoreModel(**data)
 
         try:
-            new_user.save_to_db()
+            new_store.save_to_db()
             return {'message': 'Store created successfully.'}, 201
 
-        except new_user.SQLAlchemyError as ex:
-            print(ex)
+        except new_store.SQLAlchemyError as ex:
             return {'message': ex}, 500
 
 
@@ -38,6 +42,9 @@ class StoreId(Resource):
 
     @jwt_required()
     def put(self, _id):
+        if (claims := get_jwt()) and not claims['is_admin']:
+            return {'message': 'You are not admin. You can not do this.'}
+
         data = _store_parser('put').parse_args()
 
         if result := StoreModel.find_by_id(_id):
@@ -51,6 +58,8 @@ class StoreId(Resource):
 
     @jwt_required()
     def delete(self, _id):
+        if (claims := get_jwt()) and not claims['is_admin']:
+            return {'message': 'You are not admin. You can not do this.'}
 
         if result := StoreModel.find_by_id(_id):
             result.delete_from_db()
@@ -65,6 +74,6 @@ class Stores(Resource):
 
         if result := StoreModel.get_stores():
             items = [i.to_json() for i in result]
-            return {'items': items}, 200
+            return {'stores': items}, 200
         else:
             return {}, 404

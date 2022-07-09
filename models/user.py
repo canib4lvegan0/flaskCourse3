@@ -7,10 +7,12 @@ class UserModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80))
     password = db.Column(db.String(80))
+    # is_admin = db.Column(db.Boolean, default=False)
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, is_admin=False):
         self.username = username
         self.password = password
+        # self.is_admin = is_admin
 
     @classmethod
     def find_by_username(cls, username):
@@ -18,7 +20,7 @@ class UserModel(db.Model):
 
     @classmethod
     def find_by_id(cls, _id):
-        return cls.query.filter_by(id=_id).first()
+        return cls.query.filter_by(id=_id).one_or_none()
 
     @classmethod
     def get_users(cls,):

@@ -1,6 +1,7 @@
 from hmac import compare_digest
 
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
+from flask_jwt_extended import current_user
 from flask_restful import Resource, reqparse
 
 from models.user import UserModel
@@ -13,6 +14,7 @@ def _user_parser(to):
     if to == 'post':
         parser.add_argument('username', type=str, required=True, help='Invalid cannot be blank!')
         parser.add_argument('password', type=str, required=True, help='Invalid cannot be blank!')
+        # parser.add_argument('is_admin', type=str, required=False)
     elif to == 'put':
         parser.add_argument('username', type=str, required=False)
     elif to == 'login':
@@ -48,8 +50,8 @@ class UserLogin(Resource):
 
         if user := UserModel.find_by_username(data['username']):
             if compare_digest(user.password, data['password']):
-                access_token = create_access_token(identity=user.id, fresh=True)
-                refresh_token = create_refresh_token(user.id)
+                access_token = create_access_token(identity=user, fresh=True)
+                refresh_token = create_refresh_token(user)
 
                 return {
                     'access_token': access_token,
@@ -57,6 +59,10 @@ class UserLogin(Resource):
                 }, 200
 
         return {'message': 'Invalid credentials'}, 401
+
+    @classmethod
+    def get_user_by_id(cls, _id):
+        return UserModel.find_by_id(_id)
 
 # noinspection PyUnreachableCode
 class UserId(Resource):
@@ -108,6 +114,17 @@ class UserId(Resource):
             return {'id': user.id}, 200
         except user.SQLAlchemyError as ex:
             return {'message': ex}, 500
+
+
+class UserProfile(Resource):
+
+    @classmethod
+    @jwt_required()
+    def get(cls):
+        return {
+            'id': current_user.id,
+            'username': current_user.username,
+        }, 200
 
 
 # noinspection PyUnreachableCode
