@@ -33,7 +33,7 @@ def user_lookup_callback(_jwt_header, jwt_data):
 
 @jwt.additional_claims_loader
 def add_claims_to_jwt(identify):
-    if identify == int(os.environ.get('ADMIN', '2')):
+    if identify == int(os.environ.get('ADMIN', '1')):
         return {'is_admin': True}
     return {'is_admin': False}
 
