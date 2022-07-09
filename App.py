@@ -23,8 +23,8 @@ api = Api(app)
 jwt = JWTManager(app)  # /not creating auth endpoint
 
 @jwt.user_identity_loader
-def user_identity_lookup(user):
-    return user.id
+def user_identity_lookup(identify):
+    return identify
 
 @jwt.user_lookup_loader
 def user_lookup_callback(_jwt_header, jwt_data):
@@ -32,8 +32,8 @@ def user_lookup_callback(_jwt_header, jwt_data):
     return UserLogin.get_user_by_id(_id=identity)
 
 @jwt.additional_claims_loader
-def add_claims_to_jwt(user):
-    if user.id == int(os.environ.get('ADMIN', '1')):
+def add_claims_to_jwt(identify):
+    if identify == int(os.environ.get('ADMIN', '1')):
         return {'is_admin': True}
     return {'is_admin': False}
 

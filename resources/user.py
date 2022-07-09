@@ -1,6 +1,6 @@
 from hmac import compare_digest
 
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt, get_jwt_identity
 from flask_jwt_extended import current_user
 from flask_restful import Resource, reqparse
 
@@ -50,8 +50,8 @@ class UserLogin(Resource):
 
         if user := UserModel.find_by_username(data['username']):
             if compare_digest(user.password, data['password']):
-                access_token = create_access_token(identity=user, fresh=True)
-                refresh_token = create_refresh_token(user)
+                access_token = create_access_token(identity=user.id, fresh=True)
+                refresh_token = create_refresh_token(identity=user.id)
 
                 return {
                     'access_token': access_token,
@@ -119,8 +119,11 @@ class UserId(Resource):
 class UserProfile(Resource):
 
     @classmethod
-    @jwt_required()
+    @jwt_required(optional=True)
     def get(cls):
+        if not get_jwt_identity():
+            return {'message': 'You need to be logged in to see this'}, 401
+
         return {
             'id': current_user.id,
             'username': current_user.username,

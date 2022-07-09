@@ -25,3 +25,13 @@ Python
 
 #####[Misc]
 - ```ps -ef | grep ControlCe | grep -v grep | awk '{print $2}' | xargs kill``` 
+
+
+___
+This application is deployed on Heroku (https://flaskcourse3.herokuapp.com/) and also on Digital Ocean (https://canib4lvegan0.com/)
+
+Some Heroku commands:
+
+- `heroku logs --app flaskcourse3 --tail`
+- `heroku restart --app flaskcourse3`    
+
