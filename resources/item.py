@@ -25,7 +25,7 @@ def _item_parser(to):
 # noinspection PyUnreachableCode
 class ItemRegister(Resource):
 
-    @jwt_required()
+    @jwt_required(refresh=True)
     def post(self):
         if (claims := get_jwt()) and not claims['is_admin']:
             return {'message': 'You are not admin. You can not do this.'}
@@ -46,7 +46,7 @@ class ItemId(Resource):
         if result := ItemModel.find_by_id(_id):
             return {'item': result.to_json()}
 
-    @jwt_required()
+    @jwt_required(refresh=True)
     def put(self, _id):
         if (claims := get_jwt()) and not claims['is_admin']:
             return {'message': 'You are not admin. You can not do this.'}
@@ -65,7 +65,7 @@ class ItemId(Resource):
         else:
             return {'message': 'Item not found'}, 404
 
-    @jwt_required()
+    @jwt_required(refresh=True)
     def delete(self, _id):
         if (claims := get_jwt()) and not claims['is_admin']:
             return {'message': 'You are not admin. You can not do this.'}

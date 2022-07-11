@@ -1,9 +1,16 @@
 from hmac import compare_digest
 
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt, get_jwt_identity
-from flask_jwt_extended import current_user
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    jwt_required,
+    get_jwt_identity,
+    current_user,
+    get_jwt
+)
 from flask_restful import Resource, reqparse
 
+from blocklist import BLOCKLIST
 from models.user import UserModel
 from utils import convert_to_dec_or_alpha
 
@@ -64,6 +71,14 @@ class UserLogin(Resource):
     def get_user_by_id(cls, _id):
         return UserModel.find_by_id(_id)
 
+
+class UserLogout(Resource):
+    @jwt_required()
+    def post(self):
+        jti = get_jwt()['jti']      # jti is a "JWT ID", a unique identifier for a a JWT.
+        BLOCKLIST.add(jti)
+        return {'message': 'Successfully logout'}
+
 # noinspection PyUnreachableCode
 class UserId(Resource):
 
@@ -117,7 +132,6 @@ class UserId(Resource):
 
 
 class UserProfile(Resource):
-
     @classmethod
     @jwt_required(optional=True)
     def get(cls):
@@ -143,3 +157,13 @@ class Users(Resource):
             return {'users': users}, 200
         else:
             return {}, 404
+
+
+class RefreshToken(Resource):
+    @jwt_required(refresh=True)
+    def post(self):
+        if not (current := get_jwt_identity()):
+            new_token = create_access_token(identity=current, fresh=False)
+            return {'access_token': new_token}, 200
+
+        return {'message': 'You was not logged'}, 401
