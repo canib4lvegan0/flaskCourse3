@@ -73,9 +73,10 @@ class UserLogin(Resource):
 
 
 class UserLogout(Resource):
-    @jwt_required()
+    @jwt_required(verify_type=False)
     def post(self):
-        jti = get_jwt()['jti']      # jti is a "JWT ID", a unique identifier for a a JWT.
+        retrieved_jwt = get_jwt()      # jti is a "JWT ID", a unique identifier for a a JWT.
+        jti = retrieved_jwt['jti']
         BLOCKLIST.add(jti)
         return {'message': 'Successfully logout'}
 
@@ -142,7 +143,6 @@ class UserProfile(Resource):
             'id': current_user.id,
             'username': current_user.username,
             'is_admin': (claims := get_jwt()) and claims['is_admin']
-
         }, 200
 
 
@@ -153,7 +153,6 @@ class Users(Resource):
     def get(self):
         if result := UserModel.get_users():
             users = [u.to_json() for u in result]
-
             return {'users': users}, 200
         else:
             return {}, 404
@@ -162,7 +161,7 @@ class Users(Resource):
 class RefreshToken(Resource):
     @jwt_required(refresh=True)
     def post(self):
-        if not (current := get_jwt_identity()):
+        if current := get_jwt_identity():
             new_token = create_access_token(identity=current, fresh=False)
             return {'access_token': new_token}, 200
 

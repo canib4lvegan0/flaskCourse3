@@ -1,4 +1,4 @@
-from flask_jwt_extended import jwt_required, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
 from flask_restful import Resource, reqparse
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -24,9 +24,11 @@ def _item_parser(to):
 
 # noinspection PyUnreachableCode
 class ItemRegister(Resource):
-
     @jwt_required(refresh=True)
     def post(self):
+        if not get_jwt_identity():
+            return {'message': 'You need to be logged in to see this'}, 401
+
         if (claims := get_jwt()) and not claims['is_admin']:
             return {'message': 'You are not admin. You can not do this.'}
 

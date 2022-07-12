@@ -22,6 +22,7 @@ from resources.user import (
     RefreshToken
 )
 
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URI', 'sqlite:///data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -54,17 +55,28 @@ def add_claims_to_jwt(identify):
 
 @jwt.expired_token_loader
 def expire_token_callback(jwt_header, jwt_payload):
-    return {'message': 'The token has expired'}, 401
+    return {'message': 'The token has expired', 'error': 'expired_token'}, 401
 
 
 @jwt.invalid_token_loader
 def invalid_token_callback(error):
-    return {'message': 'Invalid token'}, 401
+    return {'message': error, 'error': 'invalid_token'}, 401
+
+
+@jwt.unauthorized_loader
+def unauthorized_token_callback(error):
+    return {'message': error, 'error': 'unauthorized_token'}, 401
+
+
+@jwt.needs_fresh_token_loader
+def needs_refresh_token_callback(jwt_header, jwt_payload):
+    return {'message': 'You need refresh your token', 'error': 'unrefreshed_token'}, 401
 
 
 @jwt.token_in_blocklist_loader
 def check_if_token_in_blacklist(jwt_header, jwt_payload):
-    return jwt_payload['jti'] in BLOCKLIST
+    jti = jwt_payload['jti']
+    return jti in BLOCKLIST
 
 
 @jwt.revoked_token_loader
@@ -89,10 +101,11 @@ api.add_resource(Stores, '/stores', methods=['GET'])
 api.add_resource(Aline, '/aline', methods=['GET'])
 api.add_resource(Home, '/', methods=['GET'])
 
-if os.environ.get('ENVIRONMENT') == 'dev':
-    import run
 
-    run.init(app, db)
+if os.environ.get('CREATE_TABLES') == 'True':
+    import run
+    print('Running on mode creating tables...')
+    run.init(app=app, db=db)
 else:
     db.init_app(app)
 
